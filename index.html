@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Document Intelligence — Live Demo</title>
+    <meta name="description" content="Watch AI extract structured data from documents in real-time. Live demo by Georg Chimion.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #08080A; --bg-2: #0F0F12; --bg-3: #16161B; --surface: #1C1C23;
+            --border: rgba(255,255,255,0.07); --border-hover: rgba(255,255,255,0.14);
+            --text: #EAEAEF; --text-2: rgba(255,255,255,0.52); --text-3: rgba(255,255,255,0.30);
+            --accent: #6366F1; --accent-2: #818CF8; --accent-glow: rgba(99,102,241,0.12);
+            --warm: #F0845C; --warm-2: #F7A87C; --warm-glow: rgba(240,132,92,0.10);
+            --teal: #00D2C8; --teal-glow: rgba(0,210,200,0.10);
+            --green: #10B981; --green-glow: rgba(16,185,129,0.10);
+            --r: 14px; --r-sm: 8px;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            font-weight: 400; line-height: 1.65; overflow-x: hidden;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+        }
+        a { color: var(--accent-2); text-decoration: none; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 40px; }
+
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            padding: 18px 40px; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+        nav::before {
+            content: ''; position: absolute; inset: 0; z-index: -1;
+            background: rgba(8,8,10,0.88); backdrop-filter: blur(24px) saturate(1.3);
+        }
+        .nav-brand {
+            font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15px;
+            letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px;
+        }
+        .nav-icon {
+            width: 32px; height: 32px; border-radius: 10px;
+            background: linear-gradient(135deg, var(--warm), #FF6B6B);
+            display: flex; align-items: center; justify-content: center; font-size: 15px;
+        }
+        .nav-back { font-size: 13px; color: var(--text-2); }
+        .nav-back:hover { color: var(--text); }
+
+        .hero {
+            padding: 160px 0 60px; text-align: center; position: relative; overflow: hidden;
+        }
+        .hero-glow {
+            position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+            width: 800px; height: 500px;
+            background: radial-gradient(circle, rgba(240,132,92,0.10) 0%, rgba(255,107,107,0.06) 35%, transparent 65%);
+            pointer-events: none; filter: blur(80px);
+        }
+        .hero h1 {
+            font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+            font-size: clamp(32px, 4vw, 48px); line-height: 1.15;
+            letter-spacing: -0.035em; margin-bottom: 16px; position: relative;
+        }
+        .hero-sub { font-size: 16px; color: var(--text-2); max-width: 480px; margin: 0 auto; position: relative; }
+
+        /* Demo area */
+        .demo-wrapper {
+            padding: 60px 0 120px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;
+        }
+        .demo-panel {
+            background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r);
+            overflow: hidden;
+        }
+        .panel-header {
+            padding: 16px 24px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .panel-title {
+            font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 14px;
+        }
+        .panel-badge {
+            font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 3px 10px;
+            border-radius: 100px; background: var(--warm-glow); color: var(--warm); border: 1px solid rgba(240,132,92,0.2);
+        }
+        .panel-badge.done { background: var(--green-glow); color: var(--green); border-color: rgba(16,185,129,0.2); }
+
+        /* Document selector */
+        .doc-selector { padding: 20px 24px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .doc-btn {
+            padding: 10px 18px; background: var(--bg-3); border: 1px solid var(--border);
+            border-radius: var(--r-sm); font-size: 13px; color: var(--text-2); cursor: pointer;
+            font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+        }
+        .doc-btn:hover { border-color: var(--border-hover); color: var(--text); }
+        .doc-btn.active { border-color: var(--warm); color: var(--warm); background: var(--warm-glow); }
+
+        /* Document preview */
+        .doc-preview {
+            padding: 24px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+            line-height: 1.8; color: var(--text-2); min-height: 400px;
+        }
+        .doc-preview .doc-header {
+            text-align: center; padding-bottom: 16px; margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .doc-preview .doc-company {
+            font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; color: var(--text);
+        }
+        .doc-preview .doc-type { font-size: 12px; color: var(--text-3); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 4px; }
+        .doc-preview table {
+            width: 100%; border-collapse: collapse; margin-top: 12px;
+        }
+        .doc-preview th {
+            text-align: left; font-size: 11px; color: var(--text-3); font-weight: 500;
+            padding: 6px 0; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.04em;
+        }
+        .doc-preview td { padding: 8px 0; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .doc-preview .total-row td { font-weight: 600; color: var(--text); border-top: 1px solid var(--border); padding-top: 12px; }
+        .doc-preview .highlight { background: rgba(240,132,92,0.08); border-radius: 3px; padding: 1px 4px; transition: background 0.4s; }
+        .doc-preview .highlight.active { background: rgba(240,132,92,0.25); }
+
+        /* JSON output */
+        .json-output {
+            padding: 24px; font-family: 'JetBrains Mono', monospace; font-size: 12px;
+            line-height: 1.8; min-height: 400px; overflow-x: auto;
+        }
+        .json-output .key { color: var(--accent-2); }
+        .json-output .str { color: var(--green); }
+        .json-output .num { color: var(--warm); }
+        .json-output .bracket { color: var(--text-3); }
+        .json-output .line {
+            opacity: 0; transform: translateX(-8px);
+            animation: lineIn 0.15s ease-out forwards;
+        }
+
+        @keyframes lineIn {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Processing indicator */
+        .processing {
+            padding: 24px; text-align: center; display: none;
+        }
+        .processing.show { display: block; }
+        .processing-bar {
+            height: 3px; background: var(--bg-3); border-radius: 2px; overflow: hidden; margin: 16px auto; max-width: 200px;
+        }
+        .processing-bar-fill {
+            height: 100%; width: 0; background: linear-gradient(90deg, var(--warm), var(--accent));
+            border-radius: 2px; transition: width 0.1s;
+        }
+        .processing-text { font-size: 13px; color: var(--text-3); }
+
+        /* CTA */
+        .cta-section { text-align: center; padding: 80px 0 120px; }
+        .cta-section h2 {
+            font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 28px;
+            letter-spacing: -0.03em; margin-bottom: 12px;
+        }
+        .cta-section p { font-size: 15px; color: var(--text-2); margin-bottom: 28px; }
+        .cta-btn {
+            padding: 14px 30px; background: var(--warm); color: #0A0A0B; font-size: 15px; font-weight: 600;
+            border-radius: 10px; border: none; cursor: pointer; transition: all 0.25s;
+            font-family: 'Space Grotesk', sans-serif; text-decoration: none; display: inline-block;
+        }
+        .cta-btn:hover { background: var(--warm-2); color: #0A0A0B; transform: translateY(-2px); }
+
+        footer { padding: 40px 0; border-top: 1px solid var(--border); }
+        .footer-inner {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 13px; color: var(--text-3);
+        }
+        .footer-inner a { color: var(--text-2); }
+        .footer-badge {
+            display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+            background: var(--accent-glow); border: 1px solid rgba(99,102,241,0.15);
+            border-radius: 6px; font-size: 11px; color: var(--accent-2);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        @media (max-width: 800px) {
+            .demo-wrapper { grid-template-columns: 1fr; }
+            .container { padding: 0 20px; }
+            nav { padding: 14px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-brand">
+        <div class="nav-icon">📄</div>
+        Doc Intelligence
+    </div>
+    <a href="https://georg.miami" class="nav-back">&#8592; georg.miami</a>
+</nav>
+
+<section class="hero">
+    <div class="hero-glow"></div>
+    <div class="container">
+        <h1>Drop a document.<br>Watch AI read it.</h1>
+        <p class="hero-sub">See how AI extracts structured data from invoices, contracts, and receipts — in real time.</p>
+    </div>
+</section>
+
+<div class="container">
+    <div class="demo-wrapper">
+        <!-- Left: Document -->
+        <div class="demo-panel">
+            <div class="panel-header">
+                <span class="panel-title">Source Document</span>
+                <span class="panel-badge" id="input-badge">Select a demo</span>
+            </div>
+            <div class="doc-selector">
+                <button class="doc-btn active" onclick="loadDemo('invoice', this)">Invoice</button>
+                <button class="doc-btn" onclick="loadDemo('receipt', this)">Receipt</button>
+                <button class="doc-btn" onclick="loadDemo('contract', this)">Contract</button>
+            </div>
+            <div class="doc-preview" id="doc-preview"></div>
+        </div>
+
+        <!-- Right: Extracted JSON -->
+        <div class="demo-panel">
+            <div class="panel-header">
+                <span class="panel-title">Extracted Data</span>
+                <span class="panel-badge" id="output-badge">Waiting...</span>
+            </div>
+            <div class="processing" id="processing">
+                <div class="processing-bar"><div class="processing-bar-fill" id="prog-fill"></div></div>
+                <div class="processing-text" id="prog-text">Analyzing document structure...</div>
+            </div>
+            <div class="json-output" id="json-output"></div>
+        </div>
+    </div>
+</div>
+
+<section class="cta-section">
+    <div class="container">
+        <h2>Want this for your team?</h2>
+        <p>I build AI document processing pipelines for enterprise teams.<br>Custom extraction, validation, and routing — production-ready.</p>
+        <a href="https://georg.miami/#contact" class="cta-btn">Let's Talk &#8594;</a>
+    </div>
+</section>
+
+<footer>
+    <div class="container">
+        <div class="footer-inner">
+            <span>Built by <a href="https://georg.miami">Georg Chimion</a> &middot; Miami, FL</span>
+            <span class="footer-badge">&#9889; Powered by Claude</span>
+        </div>
+    </div>
+</footer>
+
+<script>
+const demos = {
+    invoice: {
+        html: `
+            <div class="doc-header">
+                <div class="doc-company">Meridian Solutions LLC</div>
+                <div class="doc-type">Invoice</div>
+            </div>
+            <p><strong>Invoice #</strong> <span class="highlight" data-field="invoice_number">INV-2026-0847</span></p>
+            <p><strong>Date:</strong> <span class="highlight" data-field="date">March 3, 2026</span> &nbsp; <strong>Due:</strong> <span class="highlight" data-field="due_date">April 2, 2026</span></p>
+            <p><strong>Bill To:</strong> <span class="highlight" data-field="client">Apex Financial Group, 200 S Biscayne Blvd, Miami FL 33131</span></p>
+            <br>
+            <table>
+                <tr><th>Description</th><th style="text-align:right">Amount</th></tr>
+                <tr><td><span class="highlight" data-field="line_1">AI Workflow Consulting — 40 hrs @ $175/hr</span></td><td style="text-align:right"><span class="highlight" data-field="amount_1">$7,000.00</span></td></tr>
+                <tr><td><span class="highlight" data-field="line_2">Power Platform Development — fixed scope</span></td><td style="text-align:right"><span class="highlight" data-field="amount_2">$12,500.00</span></td></tr>
+                <tr><td><span class="highlight" data-field="line_3">Cloud Infrastructure Setup (Azure)</span></td><td style="text-align:right"><span class="highlight" data-field="amount_3">$3,200.00</span></td></tr>
+                <tr class="total-row"><td><strong>Total Due</strong></td><td style="text-align:right"><span class="highlight" data-field="total"><strong>$22,700.00</strong></span></td></tr>
+            </table>
+            <br>
+            <p style="font-size:12px;color:var(--text-3)">Payment: Wire to Meridian Solutions LLC, BofA Acct ending 4821<br>Net 30 terms. Late payments subject to 1.5% monthly interest.</p>
+        `,
+        json: {
+            document_type: "invoice",
+            invoice_number: "INV-2026-0847",
+            date: "2026-03-03",
+            due_date: "2026-04-02",
+            vendor: { name: "Meridian Solutions LLC", bank: "Bank of America", account_last4: "4821" },
+            client: { name: "Apex Financial Group", address: "200 S Biscayne Blvd, Miami FL 33131" },
+            line_items: [
+                { description: "AI Workflow Consulting", quantity: 40, unit: "hours", rate: 175, amount: 7000 },
+                { description: "Power Platform Development", quantity: 1, unit: "fixed", rate: 12500, amount: 12500 },
+                { description: "Cloud Infrastructure Setup (Azure)", quantity: 1, unit: "fixed", rate: 3200, amount: 3200 }
+            ],
+            subtotal: 22700,
+            tax: 0,
+            total: 22700,
+            currency: "USD",
+            payment_terms: "Net 30",
+            confidence: 0.97
+        }
+    },
+    receipt: {
+        html: `
+            <div class="doc-header">
+                <div class="doc-company">Whole Foods Market</div>
+                <div class="doc-type">Receipt</div>
+            </div>
+            <p><span class="highlight" data-field="store">Store #10247 — Miami Beach, FL</span></p>
+            <p><span class="highlight" data-field="date">03/08/2026  2:47 PM</span></p>
+            <br>
+            <table>
+                <tr><th>Item</th><th style="text-align:right">Price</th></tr>
+                <tr><td><span class="highlight" data-field="item_1">Organic Avocados (3)</span></td><td style="text-align:right">$5.97</td></tr>
+                <tr><td><span class="highlight" data-field="item_2">Atlantic Salmon 1.2lb</span></td><td style="text-align:right">$14.28</td></tr>
+                <tr><td><span class="highlight" data-field="item_3">Oat Milk — Oatly</span></td><td style="text-align:right">$5.49</td></tr>
+                <tr><td><span class="highlight" data-field="item_4">Sourdough Bread</span></td><td style="text-align:right">$6.99</td></tr>
+                <tr><td><span class="highlight" data-field="item_5">Baby Spinach 5oz</span></td><td style="text-align:right">$3.99</td></tr>
+            </table>
+            <br>
+            <p><strong>Subtotal:</strong> <span class="highlight" data-field="subtotal">$36.72</span></p>
+            <p><strong>Tax (7%):</strong> <span class="highlight" data-field="tax">$2.57</span></p>
+            <p><strong>Total:</strong> <span class="highlight" data-field="total"><strong>$39.29</strong></span></p>
+            <p style="font-size:12px;color:var(--text-3)"><br>VISA ending 6411 &nbsp; Auth: 847291<br>Thank you for shopping at Whole Foods!</p>
+        `,
+        json: {
+            document_type: "receipt",
+            merchant: { name: "Whole Foods Market", store_id: "10247", location: "Miami Beach, FL" },
+            date: "2026-03-08T14:47:00",
+            items: [
+                { name: "Organic Avocados", quantity: 3, price: 5.97, category: "Produce" },
+                { name: "Atlantic Salmon", weight: "1.2lb", price: 14.28, category: "Seafood" },
+                { name: "Oat Milk — Oatly", quantity: 1, price: 5.49, category: "Dairy Alternative" },
+                { name: "Sourdough Bread", quantity: 1, price: 6.99, category: "Bakery" },
+                { name: "Baby Spinach 5oz", quantity: 1, price: 3.99, category: "Produce" }
+            ],
+            subtotal: 36.72,
+            tax: 2.57,
+            tax_rate: 0.07,
+            total: 39.29,
+            payment: { method: "VISA", last4: "6411", auth_code: "847291" },
+            confidence: 0.99
+        }
+    },
+    contract: {
+        html: `
+            <div class="doc-header">
+                <div class="doc-company">Master Services Agreement</div>
+                <div class="doc-type">Contract</div>
+            </div>
+            <p><strong>Effective Date:</strong> <span class="highlight" data-field="effective_date">March 1, 2026</span></p>
+            <p><strong>Between:</strong> <span class="highlight" data-field="party_a">Chimion Consulting LLC ("Contractor")</span></p>
+            <p><strong>And:</strong> <span class="highlight" data-field="party_b">TechVentures Inc., 500 Brickell Ave, Miami FL ("Client")</span></p>
+            <br>
+            <p><strong>1. Scope of Work</strong></p>
+            <p>Contractor shall provide <span class="highlight" data-field="scope">AI automation consulting, workflow design, and Power Platform development services</span> as described in each Statement of Work ("SOW") executed under this Agreement.</p>
+            <br>
+            <p><strong>2. Compensation</strong></p>
+            <p>Client shall pay Contractor at a rate of <span class="highlight" data-field="rate">$175 per hour</span>, invoiced bi-weekly. Payment due within <span class="highlight" data-field="terms">Net 30</span> days of invoice receipt.</p>
+            <br>
+            <p><strong>3. Term</strong></p>
+            <p>This Agreement is effective for <span class="highlight" data-field="duration">twelve (12) months</span> from the Effective Date, with automatic renewal unless terminated with <span class="highlight" data-field="notice">30 days written notice</span>.</p>
+            <br>
+            <p><strong>4. Intellectual Property</strong></p>
+            <p>All work product created under this Agreement shall be <span class="highlight" data-field="ip">owned by Client upon full payment</span>. Contractor retains rights to pre-existing tools and methodologies.</p>
+        `,
+        json: {
+            document_type: "contract",
+            contract_type: "Master Services Agreement",
+            effective_date: "2026-03-01",
+            parties: {
+                contractor: { name: "Chimion Consulting LLC", role: "Contractor" },
+                client: { name: "TechVentures Inc.", address: "500 Brickell Ave, Miami FL", role: "Client" }
+            },
+            key_terms: {
+                scope: "AI automation consulting, workflow design, Power Platform development",
+                rate: { amount: 175, unit: "hourly", currency: "USD" },
+                payment_terms: "Net 30, bi-weekly invoicing",
+                duration: "12 months",
+                renewal: "Automatic, 30-day notice to terminate",
+                ip_ownership: "Client owns upon full payment",
+                contractor_retains: "Pre-existing tools and methodologies"
+            },
+            risk_flags: ["No liability cap specified", "No termination-for-convenience clause", "IP transfer on payment only"],
+            confidence: 0.94
+        }
+    }
+};
+
+function loadDemo(type, el) {
+    // Update buttons
+    document.querySelectorAll('.doc-btn').forEach(b => b.classList.remove('active'));
+    if (el) el.classList.add('active');
+    else document.querySelector('.doc-btn').classList.add('active');
+
+    // Show document
+    document.getElementById('doc-preview').innerHTML = demos[type].html;
+    document.getElementById('input-badge').textContent = type.charAt(0).toUpperCase() + type.slice(1);
+    document.getElementById('input-badge').className = 'panel-badge done';
+
+    // Reset output
+    document.getElementById('json-output').innerHTML = '';
+    document.getElementById('output-badge').textContent = 'Processing...';
+    document.getElementById('output-badge').className = 'panel-badge';
+
+    // Show processing
+    const proc = document.getElementById('processing');
+    proc.classList.add('show');
+    const fill = document.getElementById('prog-fill');
+    const text = document.getElementById('prog-text');
+
+    const steps = [
+        [15, 'Analyzing document structure...'],
+        [35, 'Identifying fields and entities...'],
+        [55, 'Extracting key-value pairs...'],
+        [75, 'Validating data types...'],
+        [90, 'Computing confidence scores...'],
+        [100, 'Done!']
+    ];
+
+    let i = 0;
+    const interval = setInterval(() => {
+        if (i < steps.length) {
+            fill.style.width = steps[i][0] + '%';
+            text.textContent = steps[i][1];
+
+            // Highlight corresponding fields during extraction
+            if (i >= 1 && i <= 3) {
+                const highlights = document.querySelectorAll('.highlight');
+                const idx = Math.min((i - 1) * 3, highlights.length - 1);
+                for (let h = 0; h <= idx && h < highlights.length; h++) {
+                    highlights[h].classList.add('active');
+                }
+            }
+
+            i++;
+        } else {
+            clearInterval(interval);
+            proc.classList.remove('show');
+            document.getElementById('output-badge').textContent = 'Extracted';
+            document.getElementById('output-badge').className = 'panel-badge done';
+            renderJSON(demos[type].json);
+        }
+    }, 350);
+}
+
+function renderJSON(obj) {
+    const container = document.getElementById('json-output');
+    const lines = JSON.stringify(obj, null, 2).split('\n');
+    container.innerHTML = lines.map((line, i) => {
+        const colored = line
+            .replace(/"([^"]+)":/g, '<span class="key">"$1"</span>:')
+            .replace(/: "([^"]+)"/g, ': <span class="str">"$1"</span>')
+            .replace(/: (\d+\.?\d*)/g, ': <span class="num">$1</span>')
+            .replace(/[\[\]{},]/g, '<span class="bracket">$&</span>');
+        return `<div class="line" style="animation-delay:${i * 0.03}s">${colored}</div>`;
+    }).join('');
+}
+
+// Auto-load invoice demo
+loadDemo('invoice');
+</script>
+
+</body>
+</html>
