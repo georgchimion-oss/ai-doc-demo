@@ -52,8 +52,11 @@
             background: linear-gradient(135deg, var(--warm), #FF6B6B);
             display: flex; align-items: center; justify-content: center; font-size: 15px;
         }
-        .nav-back { font-size: 13px; color: var(--text-2); }
-        .nav-back:hover { color: var(--text); }
+        .nav-back {
+            font-size: 13px; color: var(--text-2); padding: 8px 16px;
+            border: 1px solid var(--border); border-radius: 8px; transition: all 0.2s;
+        }
+        .nav-back:hover { border-color: var(--border-hover); color: var(--text); }
 
         .hero {
             padding: 160px 0 60px; text-align: center; position: relative; overflow: hidden;
