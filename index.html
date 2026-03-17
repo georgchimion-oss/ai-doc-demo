@@ -15,9 +15,9 @@
             --bg: #08080A; --bg-2: #0F0F12; --bg-3: #16161B; --surface: #1C1C23;
             --border: rgba(255,255,255,0.07); --border-hover: rgba(255,255,255,0.14);
             --text: #EAEAEF; --text-2: rgba(255,255,255,0.52); --text-3: rgba(255,255,255,0.30);
-            --accent: #6366F1; --accent-2: #818CF8; --accent-glow: rgba(99,102,241,0.12);
-            --warm: #F0845C; --warm-2: #F7A87C; --warm-glow: rgba(240,132,92,0.10);
-            --teal: #00D2C8; --teal-glow: rgba(0,210,200,0.10);
+            --accent: #06B6D4; --accent-2: #22D3EE; --accent-glow: rgba(6,182,212,0.10);
+            --warm: #06B6D4; --warm-2: #22D3EE; --warm-glow: rgba(6,182,212,0.10);
+            --teal: #06B6D4; --teal-glow: rgba(6,182,212,0.10);
             --green: #10B981; --green-glow: rgba(16,185,129,0.10);
             --r: 14px; --r-sm: 8px;
         }
@@ -49,7 +49,7 @@
         }
         .nav-icon {
             width: 32px; height: 32px; border-radius: 10px;
-            background: linear-gradient(135deg, var(--warm), #FF6B6B);
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
             display: flex; align-items: center; justify-content: center; font-size: 15px;
         }
         .nav-back {
@@ -64,7 +64,7 @@
         .hero-glow {
             position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
             width: 800px; height: 500px;
-            background: radial-gradient(circle, rgba(240,132,92,0.10) 0%, rgba(255,107,107,0.06) 35%, transparent 65%);
+            background: radial-gradient(circle, rgba(6,182,212,0.10) 0%, rgba(6,182,212,0.06) 35%, transparent 65%);
             pointer-events: none; filter: blur(80px);
         }
         .hero h1 {
@@ -92,7 +92,7 @@
         }
         .panel-badge {
             font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 3px 10px;
-            border-radius: 100px; background: var(--warm-glow); color: var(--warm); border: 1px solid rgba(240,132,92,0.2);
+            border-radius: 100px; background: var(--warm-glow); color: var(--warm); border: 1px solid rgba(6,182,212,0.2);
         }
         .panel-badge.done { background: var(--green-glow); color: var(--green); border-color: rgba(16,185,129,0.2); }
 
@@ -128,8 +128,8 @@
         }
         .doc-preview td { padding: 8px 0; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.03); }
         .doc-preview .total-row td { font-weight: 600; color: var(--text); border-top: 1px solid var(--border); padding-top: 12px; }
-        .doc-preview .highlight { background: rgba(240,132,92,0.08); border-radius: 3px; padding: 1px 4px; transition: background 0.4s; }
-        .doc-preview .highlight.active { background: rgba(240,132,92,0.25); }
+        .doc-preview .highlight { background: rgba(6,182,212,0.08); border-radius: 3px; padding: 1px 4px; transition: background 0.4s; }
+        .doc-preview .highlight.active { background: rgba(6,182,212,0.25); }
 
         /* JSON output */
         .json-output {
@@ -158,7 +158,7 @@
             height: 3px; background: var(--bg-3); border-radius: 2px; overflow: hidden; margin: 16px auto; max-width: 200px;
         }
         .processing-bar-fill {
-            height: 100%; width: 0; background: linear-gradient(90deg, var(--warm), var(--accent));
+            height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2));
             border-radius: 2px; transition: width 0.1s;
         }
         .processing-text { font-size: 13px; color: var(--text-3); }
@@ -185,7 +185,7 @@
         .footer-inner a { color: var(--text-2); }
         .footer-badge {
             display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
-            background: var(--accent-glow); border: 1px solid rgba(99,102,241,0.15);
+            background: var(--accent-glow); border: 1px solid rgba(6,182,212,0.15);
             border-radius: 6px; font-size: 11px; color: var(--accent-2);
             font-family: 'JetBrains Mono', monospace;
         }
