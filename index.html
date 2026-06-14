@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Document Intelligence — Live Demo</title>
+    <title>AI Document Intelligence: Live Demo</title>
     <meta name="description" content="Watch AI extract structured data from documents in real-time. Live demo by Georg Chimion.">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,13 +12,14 @@
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
-            --bg: #08080A; --bg-2: #0F0F12; --bg-3: #16161B; --surface: #1C1C23;
-            --border: rgba(255,255,255,0.07); --border-hover: rgba(255,255,255,0.14);
-            --text: #EAEAEF; --text-2: rgba(255,255,255,0.52); --text-3: rgba(255,255,255,0.30);
-            --accent: #06B6D4; --accent-2: #22D3EE; --accent-glow: rgba(6,182,212,0.10);
-            --warm: #06B6D4; --warm-2: #22D3EE; --warm-glow: rgba(6,182,212,0.10);
-            --teal: #06B6D4; --teal-glow: rgba(6,182,212,0.10);
-            --green: #10B981; --green-glow: rgba(16,185,129,0.10);
+            --bg: #FAF8F4; --bg-2: #FFFFFF; --bg-3: #F1EEE7; --surface: #EAE6DE;
+            --border: rgba(24,32,42,0.10); --border-hover: rgba(24,32,42,0.22);
+            --text: #1C242E; --text-2: rgba(28,36,46,0.62); --text-3: rgba(28,36,46,0.42);
+            --accent: #0E7490; --accent-2: #155E75; --accent-glow: rgba(14,116,144,0.08);
+            --warm: #0E7490; --warm-2: #155E75; --warm-glow: rgba(14,116,144,0.08);
+            --teal: #0E7490; --teal-glow: rgba(14,116,144,0.08);
+            --green: #047857; --green-glow: rgba(4,120,87,0.08);
+            --code-bg: #F5F3EE;
             --r: 14px; --r-sm: 8px;
         }
         html { scroll-behavior: smooth; }
@@ -41,7 +42,7 @@
         }
         nav::before {
             content: ''; position: absolute; inset: 0; z-index: -1;
-            background: rgba(8,8,10,0.88); backdrop-filter: blur(24px) saturate(1.3);
+            background: rgba(250,248,244,0.88); backdrop-filter: blur(24px) saturate(1.3);
         }
         .nav-brand {
             font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15px;
@@ -49,7 +50,8 @@
         }
         .nav-icon {
             width: 32px; height: 32px; border-radius: 10px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            background: linear-gradient(135deg, rgba(14,116,144,0.14), rgba(14,116,144,0.06));
+            border: 1px solid rgba(14,116,144,0.20);
             display: flex; align-items: center; justify-content: center; font-size: 15px;
         }
         .nav-back {
@@ -64,7 +66,7 @@
         .hero-glow {
             position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
             width: 800px; height: 500px;
-            background: radial-gradient(circle, rgba(6,182,212,0.10) 0%, rgba(6,182,212,0.06) 35%, transparent 65%);
+            background: radial-gradient(circle, rgba(14,116,144,0.10) 0%, rgba(14,116,144,0.05) 35%, transparent 65%);
             pointer-events: none; filter: blur(80px);
         }
         .hero h1 {
@@ -76,12 +78,12 @@
 
         /* Demo area */
         .demo-wrapper {
-            padding: 60px 0 120px;
+            padding: 60px 0 32px;
             display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;
         }
         .demo-panel {
             background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r);
-            overflow: hidden;
+            overflow: hidden; box-shadow: 0 1px 3px rgba(24,32,42,0.05), 0 8px 28px rgba(24,32,42,0.05);
         }
         .panel-header {
             padding: 16px 24px; border-bottom: 1px solid var(--border);
@@ -92,9 +94,9 @@
         }
         .panel-badge {
             font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 3px 10px;
-            border-radius: 100px; background: var(--warm-glow); color: var(--warm); border: 1px solid rgba(6,182,212,0.2);
+            border-radius: 100px; background: var(--warm-glow); color: var(--warm); border: 1px solid rgba(14,116,144,0.25);
         }
-        .panel-badge.done { background: var(--green-glow); color: var(--green); border-color: rgba(16,185,129,0.2); }
+        .panel-badge.done { background: var(--green-glow); color: var(--green); border-color: rgba(4,120,87,0.25); }
 
         /* Document selector */
         .doc-selector { padding: 20px 24px; display: flex; gap: 10px; flex-wrap: wrap; }
@@ -126,19 +128,20 @@
             text-align: left; font-size: 11px; color: var(--text-3); font-weight: 500;
             padding: 6px 0; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.04em;
         }
-        .doc-preview td { padding: 8px 0; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .doc-preview td { padding: 8px 0; font-size: 13px; border-bottom: 1px solid rgba(24,32,42,0.05); }
         .doc-preview .total-row td { font-weight: 600; color: var(--text); border-top: 1px solid var(--border); padding-top: 12px; }
-        .doc-preview .highlight { background: rgba(6,182,212,0.08); border-radius: 3px; padding: 1px 4px; transition: background 0.4s; }
-        .doc-preview .highlight.active { background: rgba(6,182,212,0.25); }
+        .doc-preview .highlight { background: rgba(14,116,144,0.09); border-radius: 3px; padding: 1px 4px; transition: background 0.4s; }
+        .doc-preview .highlight.active { background: rgba(14,116,144,0.22); }
 
         /* JSON output */
         .json-output {
             padding: 24px; font-family: 'JetBrains Mono', monospace; font-size: 12px;
             line-height: 1.8; min-height: 400px; overflow-x: auto;
+            background: var(--code-bg);
         }
         .json-output .key { color: var(--accent-2); }
         .json-output .str { color: var(--green); }
-        .json-output .num { color: var(--warm); }
+        .json-output .num { color: #B45309; }
         .json-output .bracket { color: var(--text-3); }
         .json-output .line {
             opacity: 0; transform: translateX(-8px);
@@ -164,18 +167,18 @@
         .processing-text { font-size: 13px; color: var(--text-3); }
 
         /* CTA */
-        .cta-section { text-align: center; padding: 80px 0 120px; }
+        .cta-section { text-align: center; padding: 36px 0 90px; }
         .cta-section h2 {
             font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 28px;
             letter-spacing: -0.03em; margin-bottom: 12px;
         }
         .cta-section p { font-size: 15px; color: var(--text-2); margin-bottom: 28px; }
         .cta-btn {
-            padding: 14px 30px; background: var(--warm); color: #0A0A0B; font-size: 15px; font-weight: 600;
+            padding: 14px 30px; background: var(--warm); color: #FFFFFF; font-size: 15px; font-weight: 600;
             border-radius: 10px; border: none; cursor: pointer; transition: all 0.25s;
             font-family: 'Space Grotesk', sans-serif; text-decoration: none; display: inline-block;
         }
-        .cta-btn:hover { background: var(--warm-2); color: #0A0A0B; transform: translateY(-2px); }
+        .cta-btn:hover { background: var(--warm-2); color: #FFFFFF; transform: translateY(-2px); }
 
         footer { padding: 40px 0; border-top: 1px solid var(--border); }
         .footer-inner {
@@ -185,7 +188,7 @@
         .footer-inner a { color: var(--text-2); }
         .footer-badge {
             display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
-            background: var(--accent-glow); border: 1px solid rgba(6,182,212,0.15);
+            background: var(--accent-glow); border: 1px solid rgba(14,116,144,0.20);
             border-radius: 6px; font-size: 11px; color: var(--accent-2);
             font-family: 'JetBrains Mono', monospace;
         }
@@ -211,7 +214,7 @@
     <div class="hero-glow"></div>
     <div class="container">
         <h1>Drop a document.<br>Watch AI read it.</h1>
-        <p class="hero-sub">See how AI extracts structured data from invoices, contracts, and receipts — in real time.</p>
+        <p class="hero-sub">See how AI extracts structured data from invoices, contracts, and receipts, in real time.</p>
     </div>
 </section>
 
@@ -249,7 +252,7 @@
 <section class="cta-section">
     <div class="container">
         <h2>Want this for your team?</h2>
-        <p>I build AI document processing pipelines for enterprise teams.<br>Custom extraction, validation, and routing — production-ready.</p>
+        <p>I build AI document processing pipelines for enterprise teams.<br>Custom extraction, validation, and routing. Production-ready.</p>
         <a href="https://georg.miami/#contact" class="cta-btn">Let's Talk &#8594;</a>
     </div>
 </section>
@@ -277,8 +280,8 @@ const demos = {
             <br>
             <table>
                 <tr><th>Description</th><th style="text-align:right">Amount</th></tr>
-                <tr><td><span class="highlight" data-field="line_1">AI Workflow Consulting — 40 hrs @ $175/hr</span></td><td style="text-align:right"><span class="highlight" data-field="amount_1">$7,000.00</span></td></tr>
-                <tr><td><span class="highlight" data-field="line_2">Power Platform Development — fixed scope</span></td><td style="text-align:right"><span class="highlight" data-field="amount_2">$12,500.00</span></td></tr>
+                <tr><td><span class="highlight" data-field="line_1">AI Workflow Consulting: 40 hrs @ $175/hr</span></td><td style="text-align:right"><span class="highlight" data-field="amount_1">$7,000.00</span></td></tr>
+                <tr><td><span class="highlight" data-field="line_2">Power Platform Development (fixed scope)</span></td><td style="text-align:right"><span class="highlight" data-field="amount_2">$12,500.00</span></td></tr>
                 <tr><td><span class="highlight" data-field="line_3">Cloud Infrastructure Setup (Azure)</span></td><td style="text-align:right"><span class="highlight" data-field="amount_3">$3,200.00</span></td></tr>
                 <tr class="total-row"><td><strong>Total Due</strong></td><td style="text-align:right"><span class="highlight" data-field="total"><strong>$22,700.00</strong></span></td></tr>
             </table>
@@ -311,14 +314,14 @@ const demos = {
                 <div class="doc-company">Whole Foods Market</div>
                 <div class="doc-type">Receipt</div>
             </div>
-            <p><span class="highlight" data-field="store">Store #10247 — Miami Beach, FL</span></p>
+            <p><span class="highlight" data-field="store">Store #10247, Miami Beach, FL</span></p>
             <p><span class="highlight" data-field="date">03/08/2026  2:47 PM</span></p>
             <br>
             <table>
                 <tr><th>Item</th><th style="text-align:right">Price</th></tr>
                 <tr><td><span class="highlight" data-field="item_1">Organic Avocados (3)</span></td><td style="text-align:right">$5.97</td></tr>
                 <tr><td><span class="highlight" data-field="item_2">Atlantic Salmon 1.2lb</span></td><td style="text-align:right">$14.28</td></tr>
-                <tr><td><span class="highlight" data-field="item_3">Oat Milk — Oatly</span></td><td style="text-align:right">$5.49</td></tr>
+                <tr><td><span class="highlight" data-field="item_3">Oat Milk (Oatly)</span></td><td style="text-align:right">$5.49</td></tr>
                 <tr><td><span class="highlight" data-field="item_4">Sourdough Bread</span></td><td style="text-align:right">$6.99</td></tr>
                 <tr><td><span class="highlight" data-field="item_5">Baby Spinach 5oz</span></td><td style="text-align:right">$3.99</td></tr>
             </table>
@@ -335,7 +338,7 @@ const demos = {
             items: [
                 { name: "Organic Avocados", quantity: 3, price: 5.97, category: "Produce" },
                 { name: "Atlantic Salmon", weight: "1.2lb", price: 14.28, category: "Seafood" },
-                { name: "Oat Milk — Oatly", quantity: 1, price: 5.49, category: "Dairy Alternative" },
+                { name: "Oat Milk (Oatly)", quantity: 1, price: 5.49, category: "Dairy Alternative" },
                 { name: "Sourdough Bread", quantity: 1, price: 6.99, category: "Bakery" },
                 { name: "Baby Spinach 5oz", quantity: 1, price: 3.99, category: "Produce" }
             ],
@@ -457,7 +460,8 @@ function renderJSON(obj) {
             .replace(/"([^"]+)":/g, '<span class="key">"$1"</span>:')
             .replace(/: "([^"]+)"/g, ': <span class="str">"$1"</span>')
             .replace(/: (\d+\.?\d*)/g, ': <span class="num">$1</span>')
-            .replace(/[\[\]{},]/g, '<span class="bracket">$&</span>');
+            .replace(/[\[\]{}]/g, '<span class="bracket">$&</span>')   // braces/brackets only
+            .replace(/,(\s*)$/, '<span class="bracket">,</span>$1');   // structural trailing comma only, never one inside a string value
         return `<div class="line" style="animation-delay:${i * 0.03}s">${colored}</div>`;
     }).join('');
 }
